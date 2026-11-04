@@ -10,7 +10,7 @@
 <meta name="description" content="أذكاري - أذكار الصباح والمساء ومواقيت الصلاة">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%23123b2b%22/%3E%3Cpath d=%22M50 13a27 27 0 1 0 27 36A22 22 0 0 1 50 13Z%22 fill=%22%23f2d88c%22/%3E%3Cpath d=%22M18 77h64v7H18zM24 58h52v19H24z%22 fill=%22%23f2d88c%22/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <title>أذكاري | الأذكار اليومية</title>
 
 <style>
@@ -271,16 +271,34 @@ footer{
 .prayer-times .muted{color:#718176;font-size:13px}
 .prayer-times .notice{background:#fff8e8;border-right:4px solid #d6a33b;padding:12px;border-radius:8px;margin-top:14px}
 
+
+/* إشعار تثبيت صغير أسفل الشاشة */
+.install-notice{position:fixed;z-index:9999;bottom:calc(14px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(94%,430px);display:flex;align-items:center;gap:10px;padding:11px 12px;background:#123b2b;color:#fff;border:1px solid #d7c17d;border-radius:16px;box-shadow:0 8px 28px #0003;font-family:Cairo,sans-serif}
+.install-notice[hidden]{display:none}
+.install-notice-icon{font-size:25px;flex:0 0 auto}
+.install-notice-text{display:flex;flex:1;min-width:0;flex-direction:column;line-height:1.45}
+.install-notice-text strong{font-size:14px}
+.install-notice-text small{font-size:11px;color:#e0eadf}
+.install-notice button{border:0;border-radius:10px;padding:9px 13px;background:#f2d88c;color:#173c2b;font:700 13px Cairo,sans-serif;white-space:nowrap;cursor:pointer}
+.install-notice .install-notice-close{background:transparent;color:#fff;font-size:22px;padding:2px 5px;line-height:1}
+@media(min-width:700px){.install-notice{bottom:20px}}
+
 </style>
 </head>
 
 <body>
 
+<div id="installNotice" class="install-notice" role="status" aria-live="polite" hidden>
+ <span class="install-notice-icon" aria-hidden="true">🌿</span>
+ <span class="install-notice-text"><strong>ثبّت أذكاري</strong><small>وخلي الأذكار معاك على موبايلك</small></span>
+ <button id="installNoticeBtn" type="button">تثبيت</button>
+ <button id="installNoticeClose" class="install-notice-close" type="button" aria-label="إغلاق">×</button>
+</div>
+
 <header>
  <p class="dua-request">لا تنسونا من صالح دعائكم</p>
  <h1>🌿 أذكاري</h1>
  <p>أذكار الصباح والمساء من القرآن والسنة</p>
- 
 </header>
 
 <nav>
@@ -1260,41 +1278,73 @@ showFastingReminderIfNeeded();
  }catch(e){}
 })();
 
-// تثبيت أذكاري كتطبيق PWA والعمل دون إنترنت.
-let azkariInstallPrompt=null;
-const azkariInstallButton=document.getElementById('installAppBtn');
-const azkariInstallStatus=document.getElementById('appInstallStatus');
+// تثبيت أذكاري كتطبيق PWA من إشعار أسفل الشاشة.
+let azkariInstallPrompt = null;
+const installNotice = document.getElementById('installNotice');
+const installNoticeBtn = document.getElementById('installNoticeBtn');
+const installNoticeClose = document.getElementById('installNoticeClose');
+const installDismissKey = 'azkari_install_notice_dismissed_v1';
+const installDoneKey = 'azkari_app_installed_v1';
+const isStandaloneApp = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-window.addEventListener('beforeinstallprompt',event=>{
+function hideInstallNotice(permanent = true) {
+ if (installNotice) installNotice.hidden = true;
+ if (permanent) {
+  try { localStorage.setItem(installDismissKey, '1'); } catch(e) {}
+ }
+}
+function showInstallNotice() {
+ let dismissed = false, installed = false;
+ try { dismissed = localStorage.getItem(installDismissKey) === '1'; installed = localStorage.getItem(installDoneKey) === '1'; } catch(e) {}
+ if (!dismissed && !installed && !isStandaloneApp() && installNotice) installNotice.hidden = false;
+}
+
+window.addEventListener('beforeinstallprompt', event => {
  event.preventDefault();
- azkariInstallPrompt=event;
- if(azkariInstallButton) azkariInstallButton.hidden=false;
- if(azkariInstallStatus) azkariInstallStatus.textContent='ثبّت التطبيق لتفتحه من أيقونته وتستخدم الأذكار دون إنترنت بعد أول تحميل.';
+ azkariInstallPrompt = event;
+ showInstallNotice();
 });
-window.addEventListener('appinstalled',()=>{
- if(azkariInstallButton) azkariInstallButton.hidden=true;
- if(azkariInstallStatus) azkariInstallStatus.textContent='تم تثبيت أذكاري على جهازك بنجاح 🤍';
- azkariInstallPrompt=null;
+
+window.addEventListener('appinstalled', () => {
+ try { localStorage.setItem(installDoneKey, '1'); } catch(e) {}
+ hideInstallNotice(true);
+ azkariInstallPrompt = null;
 });
-if(azkariInstallButton) azkariInstallButton.addEventListener('click',async()=>{
- if(azkariInstallPrompt){
-  azkariInstallPrompt.prompt();
-  const choice=await azkariInstallPrompt.userChoice;
-  if(choice && choice.outcome==='accepted' && azkariInstallStatus)
-   azkariInstallStatus.textContent='جارٍ تثبيت أذكاري…';
-  azkariInstallPrompt=null;
+
+if (installNoticeBtn) installNoticeBtn.addEventListener('click', async () => {
+ // يختفي الإشعار ولا يعود حتى لو ألغى المستخدم نافذة التثبيت.
+ hideInstallNotice(true);
+ if (azkariInstallPrompt) {
+  const promptEvent = azkariInstallPrompt;
+  azkariInstallPrompt = null;
+  try {
+   await promptEvent.prompt();
+   await promptEvent.userChoice;
+  } catch (error) { console.warn('Install prompt:', error); }
   return;
  }
- if(azkariInstallStatus){
-  azkariInstallStatus.textContent='في Chrome: اضغط ⋮ أعلى المتصفح ثم Cast, save and share أو حفظ ومشاركة ← Install page as app / تثبيت الصفحة كتطبيق. إذا لم يظهر الخيار، حدّث الصفحة بعد اكتمال تحميلها عبر HTTPS.';
+ const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+ if (isIOS) {
+  alert('لتثبيت أذكاري على iPhone: افتح الموقع في Safari، واضغط مشاركة، ثم اختر «إضافة إلى الشاشة الرئيسية».');
+ } else {
+  alert('إذا لم تظهر نافذة التثبيت: افتح قائمة Chrome ⋮ ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». تأكد من تحديث الصفحة أولًا.');
  }
 });
+if (installNoticeClose) installNoticeClose.addEventListener('click', () => hideInstallNotice(true));
 
-if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
- navigator.serviceWorker.register('./sw.js')
-  .then(()=>{if(azkariInstallStatus && !window.matchMedia('(display-mode: standalone)').matches)
-    azkariInstallStatus.textContent='يمكنك تثبيت أذكاري من الزر أعلاه. بعد أول فتح، تُحفظ الأذكار الأساسية للعمل دون إنترنت.';})
-  .catch(err=>{console.warn('PWA worker:',err);if(azkariInstallStatus)azkariInstallStatus.textContent='تعذر تجهيز وضع العمل دون إنترنت؛ حدّث الصفحة بعد التأكد من رفع ملفات التطبيق كاملة.';});
+if (isStandaloneApp()) {
+ try { localStorage.setItem(installDoneKey, '1'); } catch(e) {}
+ hideInstallNotice(true);
+} else {
+ // يظهر الإشعار تلقائيًا مرة واحدة، حتى على المتصفحات التي لا تعرض beforeinstallprompt.
+ window.setTimeout(showInstallNotice, 1200);
+}
+
+// تسجيل Service Worker مطلوب للتثبيت والعمل دون اتصال.
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+ navigator.serviceWorker.register('./sw.js', {scope: './'})
+  .then(reg => console.log('Azkari service worker ready:', reg.scope))
+  .catch(err => console.warn('Azkari service worker registration failed:', err));
 }
 
 // جدولة تذكيري الشروق والغروب أثناء بقاء التطبيق/الصفحة مفتوحة.
