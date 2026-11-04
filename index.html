@@ -4,6 +4,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#24543b">
+<meta name="description" content="أذكاري - أذكار الصباح والمساء ومواقيت الصلاة">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon-192.svg" type="image/svg+xml">
 <title>أذكاري | الأذكار اليومية</title>
 
 <style>
@@ -243,6 +247,11 @@ footer{
 <header>
  <h1>🌿 أذكاري</h1>
  <p>أذكار الصباح والمساء من القرآن والسنة</p>
+ <button id="installAppBtn" type="button" hidden
+  style="margin-top:14px;border:0;border-radius:10px;padding:10px 18px;background:#fff;color:#24543b;font-family:inherit;font-weight:bold;cursor:pointer">
+  تثبيت تطبيق أذكاري
+ </button>
+ <p id="appInstallStatus" style="font-size:12px;color:#e4f0e8;margin-top:8px"></p>
 </header>
 
 <nav>
@@ -927,10 +936,21 @@ function renderPrayerTimesPanel(){
   </div>
   <div id="prayerLocationStatus" class="muted">${prayerLocationLabel ? 'الموقع المحفوظ: '+escapePrayerHtml(prayerLocationLabel) : 'لم يتم تحديد الموقع بعد.'}</div>
   <div id="prayerTimesResult"><p class="muted">حدد موقعك أو اكتب اسم مدينتك لعرض المواقيت.</p></div>
-  <div class="notice">مهم: التنبيه التلقائي يعمل ما دامت صفحة أذكاري مفتوحة في المتصفح. إذا أغلقت الصفحة أو المتصفح فلن نضمن وصول الإشعار؛ الإشعارات المضمونة أثناء إغلاق الموقع تحتاج إلى استضافة HTTPS وخدمة Push خلفية.</div>
+  <div class="notice">يمكن تثبيت أذكاري والعمل بالأذكار المحفوظة دون إنترنت بعد أول زيارة. تنبيهات هذه النسخة من الويب تحتاج أن تكون الصفحة مفتوحة؛ جدولة إشعارات محلية موثوقة أثناء إغلاق التطبيق ستُضاف في نسخة Android وiPhone الأصلية.</div>
   <p class="muted">مصدر الحساب: AlAdhan API، مع اختيار طريقة الهيئة المصرية العامة للمساحة. قد تختلف الدقائق عن تقويم المسجد أو الجهة الرسمية المحلية؛ راجع التقويم المعتمد في منطقتك.</p>`;
  if(prayerCoordinates) fetchPrayerTimes(prayerCoordinates.lat,prayerCoordinates.lon,prayerLocationLabel || 'موقعي');
  else if(prayerCity) fetchPrayerTimesByCity(prayerCity);
+ else showCachedPrayerTimesIfAvailable();
+}
+function showCachedPrayerTimesIfAvailable(){
+ try{
+  const saved=JSON.parse(localStorage.getItem('azkari_cached_prayer_times')||'null');
+  if(saved && saved.timings){
+   const box=document.getElementById('prayerTimesResult');
+   if(box) box.innerHTML='<p class="muted">لا يوجد اتصال حاليًا. هذه آخر مواقيت محفوظة بتاريخ '+escapePrayerHtml(saved.date)+'.</p>';
+   showPrayerTimes(saved.timings,saved.label+' (محفوظ دون إنترنت)');
+  }
+ }catch(e){}
 }
 function escapePrayerHtml(value){return String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function useDeviceLocation(){
@@ -941,6 +961,7 @@ function useDeviceLocation(){
   const coords={lat:pos.coords.latitude,lon:pos.coords.longitude};
   prayerCoordinates=coords; prayerCity=''; prayerLocationLabel='موقعك الحالي';
   localStorage.setItem('azkari_prayer_coordinates',JSON.stringify(coords));
+  localStorage.setItem('azkari_location_last_updated',new Date().toISOString());
   localStorage.removeItem('azkari_prayer_city');
   localStorage.setItem('azkari_prayer_location_label',prayerLocationLabel);
   fetchPrayerTimes(coords.lat,coords.lon,prayerLocationLabel);
@@ -980,21 +1001,37 @@ function parsePrayerClock(value){
  const match=String(value||'').match(/(\d{1,2}):(\d{2})/); if(!match)return null;
  const d=new Date();d.setHours(Number(match[1]),Number(match[2]),0,0);return d;
 }
+function formatPrayer12(value){
+ const m=String(value||'').match(/(\d{1,2}):(\d{2})/);
+ if(!m) return '—';
+ const d=new Date(); d.setHours(Number(m[1]),Number(m[2]),0,0);
+ return d.toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true});
+}
 function showPrayerTimes(times,label){
  prayerTimesData=times;
  const sunrise=parsePrayerClock(times.Sunrise), sunset=parsePrayerClock(times.Sunset||times.Maghrib);
  if(!sunrise||!sunset){document.getElementById('prayerTimesResult').innerHTML='<p>لم تصل بيانات الشروق والغروب بشكل صحيح.</p>';return;}
  const morningReminder=new Date(sunrise.getTime()-30*60000), eveningReminder=new Date(sunset.getTime()-30*60000);
- const fmt=d=>d.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+ const fmt=d=>d.toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true});
+ const prayerRows=[
+  ['الفجر','Fajr','🌄'],['الشروق','Sunrise','🌅'],['الظهر','Dhuhr','☀️'],
+  ['العصر','Asr','🌤️'],['المغرب','Maghrib','🌇'],['العشاء','Isha','🌙']
+ ];
+ const prayerCards=prayerRows.map(([name,key,emoji])=>
+  `<div class="time-card">${emoji} ${name}<strong>${formatPrayer12(times[key])}</strong></div>`
+ ).join('');
  document.getElementById('prayerTimesResult').innerHTML=`
-  <div class="time-grid">
-   <div class="time-card">🌅 الشروق<strong>${escapePrayerHtml(times.Sunrise)}</strong></div>
-   <div class="time-card">☀️ تذكير أذكار الصباح<strong>${fmt(morningReminder)}</strong><span class="muted">قبل الشروق بنصف ساعة</span></div>
-   <div class="time-card">🌇 الغروب<strong>${escapePrayerHtml(times.Sunset||times.Maghrib)}</strong></div>
-   <div class="time-card">🌙 تذكير أذكار المساء<strong>${fmt(eveningReminder)}</strong><span class="muted">قبل الغروب بنصف ساعة</span></div>
+  <div class="time-grid">${prayerCards}
+   <div class="time-card">🔔 تذكير أذكار الصباح<strong>${fmt(morningReminder)}</strong><span class="muted">قبل الشروق بنصف ساعة</span></div>
+   <div class="time-card">🔔 تذكير أذكار المساء<strong>${fmt(eveningReminder)}</strong><span class="muted">قبل الغروب بنصف ساعة</span></div>
   </div>
   <p class="muted">الموقع: ${escapePrayerHtml(label)} | طريقة الحساب: الهيئة المصرية العامة للمساحة | تاريخ اليوم: ${new Date().toLocaleDateString('ar-EG')}</p>`;
  document.getElementById('prayerLocationStatus').textContent='الموقع المستخدم: '+label;
+ try{
+  localStorage.setItem('azkari_cached_prayer_times',JSON.stringify({
+   date:localDateKey(),timings:times,label,updatedAt:new Date().toISOString()
+  }));
+ }catch(e){}
  schedulePrayerAlerts(morningReminder,eveningReminder);
 }
 async function enablePrayerNotifications(){
@@ -1023,6 +1060,43 @@ function schedulePrayerAlerts(morningTime,eveningTime){
 }
 
 render();
+
+
+// إحصاءات محلية على هذا الجهاز فقط. لا تُرسل إلى أي خادم في هذه النسخة.
+(function trackLocalUsage(){
+ try{
+  const now=new Date().toISOString();
+  const count=Number(localStorage.getItem('azkari_open_count')||0)+1;
+  localStorage.setItem('azkari_open_count',String(count));
+  localStorage.setItem('azkari_last_opened_at',now);
+ }catch(e){}
+})();
+
+// تثبيت أذكاري كتطبيق PWA.
+let azkariInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',event=>{
+ event.preventDefault();
+ azkariInstallPrompt=event;
+ const btn=document.getElementById('installAppBtn');
+ if(btn) btn.hidden=false;
+});
+document.addEventListener('DOMContentLoaded',()=>{
+ const btn=document.getElementById('installAppBtn');
+ const status=document.getElementById('appInstallStatus');
+ if(btn) btn.addEventListener('click',async()=>{
+  if(!azkariInstallPrompt){
+   if(status) status.textContent='من قائمة المتصفح اختر "إضافة إلى الشاشة الرئيسية" أو "Install app".';
+   return;
+  }
+  azkariInstallPrompt.prompt();
+  await azkariInstallPrompt.userChoice;
+  azkariInstallPrompt=null;
+  btn.hidden=true;
+ });
+ if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
+  navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('PWA worker:',err));
+ }
+});
 
 </script>
 
