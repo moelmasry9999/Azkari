@@ -30,6 +30,8 @@ header{
 }
 
 header h1{margin:0;font-size:30px}
+.dua-request{color:#e8f3eb;margin:0 0 7px;font-size:14px;font-weight:600;letter-spacing:.2px}
+
 header p{color:#dcebe1;margin:8px 0 0}
 
 .top-info-bar{
@@ -40,11 +42,13 @@ header p{color:#dcebe1;margin:8px 0 0}
 .top-info-bar span{white-space:normal}
 .top-info-bar .next-prayer{color:#ffe6a8}
 @media(max-width:600px){.top-info-bar{font-size:12px;gap:5px 10px;padding:9px 7px}}
-.fasting-overlay{position:fixed;inset:0;background:#102b20b8;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px}
-.fasting-box{background:#fff;max-width:520px;width:100%;border-radius:18px;padding:24px;box-shadow:0 12px 40px #0004;text-align:center;color:#244333}
-.fasting-box h2{color:#24543b;margin-top:0}.fasting-box p{line-height:1.9}
-.fasting-box .hadith{background:#f1f7f1;border-radius:12px;padding:14px;font-family:Amiri,serif;font-size:20px}
-.fasting-box button{border:0;border-radius:10px;padding:11px 22px;background:#287451;color:#fff;font:inherit;font-weight:bold;cursor:pointer}
+.fasting-overlay{position:fixed;inset:0;background:#102b2080;z-index:1000;display:flex;align-items:center;justify-content:center;padding:12px}
+.fasting-box{background:#fff;max-width:430px;width:min(100%,430px);max-height:78vh;overflow-y:auto;border-radius:16px;padding:16px;box-shadow:0 8px 28px #0003;text-align:center;color:#244333}
+.fasting-box h2{color:#24543b;margin:0 0 8px;font-size:21px}
+.fasting-box p{line-height:1.65;margin:8px 0;font-size:14px}
+.fasting-box .hadith{background:#f1f7f1;border-radius:10px;padding:10px;font-family:Amiri,serif;font-size:18px;line-height:1.7}
+.fasting-box button{border:0;border-radius:9px;padding:9px 18px;background:#287451;color:#fff;font:inherit;font-size:14px;font-weight:bold;cursor:pointer}
+@media(max-width:480px){.fasting-overlay{padding:10px}.fasting-box{max-height:75vh;padding:13px}.fasting-box h2{font-size:19px}.fasting-box .hadith{font-size:17px}}
 
 nav{
  display:flex;
@@ -225,6 +229,17 @@ nav button.active{
 .status-pill.unrecorded{background:#edf0f2;color:#68757c}
 .tracker-note{color:#718176;font-size:12px;line-height:1.8;margin-top:12px}
 
+
+.site-footer{padding:28px 16px 34px;text-align:center;color:#718176;font-size:14px}
+.footer-dhikr{margin-bottom:18px}
+.footer-dua-card{max-width:680px;margin:0 auto;padding:20px 18px;background:#f4faf5;border:1px solid #dcebe0;border-radius:18px;line-height:1.9}
+.footer-hadith{margin:0;color:#294b39;font-size:16px;line-height:2}
+.footer-source{margin:7px 0 0;color:#718176;font-size:12px}
+.footer-request{margin:12px 0;color:#287451;font-weight:700}
+.footer-whatsapp{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:10px 18px;border-radius:999px;background:#25D366;color:#fff;text-decoration:none;font-weight:700;box-shadow:0 3px 10px #25d36635}
+.footer-whatsapp svg{width:22px;height:22px;flex:0 0 22px}
+.footer-whatsapp:hover{background:#1ebe5d}
+
 footer{
  text-align:center;
  padding:25px;
@@ -259,6 +274,7 @@ footer{
 <body>
 
 <header>
+ <p class="dua-request">لا تنسونا من صالح دعائكم</p>
  <h1>🌿 أذكاري</h1>
  <p>أذكار الصباح والمساء من القرآن والسنة</p>
  <button id="installAppBtn" type="button" hidden
@@ -320,8 +336,17 @@ footer{
 
 </div>
 
-<footer>
- سبحان الله وبحمده، سبحان الله العظيم
+<footer class="site-footer">
+ <div class="footer-dhikr">سبحان الله وبحمده، سبحان الله العظيم</div>
+ <div class="footer-dua-card">
+  <p class="footer-hadith">قال رسول الله ﷺ: «دعوةُ المرءِ المسلمِ لأخيه بظهرِ الغيبِ مستجابةٌ، عند رأسه ملكٌ موكَّلٌ، كلما دعا لأخيه بخيرٍ قال الملكُ الموكَّلُ به: آمين، ولك بمثل».</p>
+  <p class="footer-source">رواه مسلم (2733)</p>
+  <p class="footer-request">🤍 لا تنسونا من صالح دعائكم</p>
+  <a class="footer-whatsapp" href="https://wa.me/201040243773?text=%D9%84%D8%A7%20%D8%AA%D9%86%D8%B3%D9%88%D9%86%D8%A7%20%D9%85%D9%86%20%D8%B5%D8%A7%D9%84%D8%AD%20%D8%AF%D8%B9%D8%A7%D8%A6%D9%83%D9%85%20%D8%8C%20%D9%88%D8%A7%D8%AF%D8%B9%D9%88%D8%A7%20%D9%84%D9%86%D8%A7%20%D8%A8%D8%B8%D9%87%D8%B1%20%D8%A7%D9%84%D8%BA%D9%8A%D8%A8%20%F0%9F%A4%8D" target="_blank" rel="noopener noreferrer" aria-label="تواصل عبر واتساب">
+   <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16.04 2.67A13.24 13.24 0 0 0 4.67 22.7L3 29l6.47-1.64a13.27 13.27 0 1 0 6.57-24.69Zm0 24.1a10.8 10.8 0 0 1-5.5-1.5l-.4-.24-3.84.97 1.02-3.74-.26-.42a10.8 10.8 0 1 1 8.98 4.93Zm5.93-8.1c-.32-.16-1.9-.94-2.2-1.05-.3-.11-.51-.16-.73.16-.21.32-.83 1.05-1.02 1.27-.19.21-.38.24-.7.08-.32-.16-1.36-.5-2.59-1.6-.96-.85-1.61-1.9-1.8-2.22-.19-.32-.02-.49.14-.65.14-.14.32-.38.48-.57.16-.19.21-.32.32-.54.11-.21.05-.4-.03-.57-.08-.16-.73-1.76-1-2.41-.26-.63-.53-.54-.73-.55h-.62c-.21 0-.57.08-.86.4-.3.32-1.13 1.1-1.13 2.7s1.16 3.13 1.32 3.35c.16.21 2.28 3.48 5.52 4.88.77.33 1.37.53 1.84.68.77.24 1.47.21 2.02.13.62-.09 1.9-.78 2.17-1.54.27-.75.27-1.4.19-1.54-.08-.14-.29-.22-.62-.38Z"/></svg>
+   <span>تواصل معنا عبر واتساب</span>
+  </a>
+ </div>
 </footer>
 
 <script>
@@ -1093,32 +1118,47 @@ function updateTopNextPrayer(times){
 }
 function showFastingReminderIfNeeded(){
  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
- const weekday=tomorrow.getDay();const hijri=getHijriParts(tomorrow);
- const reasons=[];
- if(weekday===1)reasons.push('يوم الاثنين');
- if(weekday===4)reasons.push('يوم الخميس');
- if([13,14,15].includes(hijri.day))reasons.push('من الأيام البيض (13 أو 14 أو 15 من الشهر الهجري)');
- if(!reasons.length)return;
+ const weekday=tomorrow.getDay();
+ const hijri=getHijriParts(tomorrow);
+ const isMondayOrThursday=weekday===1||weekday===4;
+ const isWhiteDay=[13,14,15].includes(hijri.day);
+ if(!isMondayOrThursday&&!isWhiteDay)return;
+
  const key='azkari_fasting_notice_'+localDateKey(new Date());
  if(localStorage.getItem(key))return;
- const overlay=document.createElement('div');overlay.className='fasting-overlay';overlay.id='fastingReminderOverlay';
- const reasonText=reasons.join('، ');
+
+ const dayName=tomorrow.toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long'});
+ let reasonText='';
+ let hadiths='';
+ if(isMondayOrThursday){
+  reasonText='غدًا '+dayName+'، وهو يوم '+(weekday===1?'الاثنين':'الخميس')+' من الأيام المستحب صيامها.';
+  hadiths=`
+   <p class="hadith">قال رسول الله ﷺ: «تُعرَضُ الأعمالُ يومَ الاثنينِ والخميسِ، فأُحبُّ أن يُعرَضَ عملي وأنا صائمٌ»</p>
+   <p>رواه الترمذي (747)، وقال: حسن غريب.</p>
+   <p class="hadith">وقال ﷺ: «مَنْ صَامَ يَوْمًا فِي سَبِيلِ اللهِ بَاعَدَ اللهُ وَجْهَهُ عَنِ النَّارِ سَبْعِينَ خَرِيفًا»</p>
+   <p>رواه البخاري (2840) ومسلم (1153).</p>`;
+ }else{
+  reasonText='غدًا '+dayName+'، وهو من الأيام البيض (13 أو 14 أو 15 هجريًا).';
+  hadiths=`
+   <p class="hadith">قال رسول الله ﷺ: «صيامُ ثلاثةِ أيامٍ من كلِّ شهرٍ صيامُ الدهر»</p>
+   <p>رواه مسلم (1162).</p>
+   <p class="hadith">وقال ﷺ: «مَنْ صَامَ يَوْمًا فِي سَبِيلِ اللهِ بَاعَدَ اللهُ وَجْهَهُ عَنِ النَّارِ سَبْعِينَ خَرِيفًا»</p>
+   <p>رواه البخاري (2840) ومسلم (1153).</p>`;
+ }
+ const overlay=document.createElement('div');
+ overlay.className='fasting-overlay';
+ overlay.id='fastingReminderOverlay';
  overlay.innerHTML=`<div class="fasting-box" role="dialog" aria-modal="true" aria-labelledby="fastingTitle">
   <h2 id="fastingTitle">🌙 تذكير بصيام الغد</h2>
-  <p>غدًا ${tomorrow.toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long'})}، وهو ${reasonText}.</p>
-  <p class="hadith">قال رسول الله ﷺ: «تُعرَضُ الأعمالُ يومَ الاثنينِ والخميسِ، فأُحبُّ أن يُعرَضَ عملي وأنا صائمٌ»</p>
-  <p>رواه الترمذي (747)، وقال: حديث حسن غريب. ومن فضل هذين اليومين أن الأعمال تُعرض فيهما، وكان النبي ﷺ يحب أن يُعرض عمله وهو صائم.</p>
-  <p class="hadith">وقال رسول الله ﷺ: «مَنْ صَامَ يَوْمًا فِي سَبِيلِ اللهِ بَاعَدَ اللهُ وَجْهَهُ عَنِ النَّارِ سَبْعِينَ خَرِيفًا»</p>
-  <p>رواه البخاري (2840) ومسلم (1153)، وهو حديث صحيح متفق عليه. و«سبعين خريفًا» أي سبعين سنة. <a href="https://hadeethenc.com/ar/browse/hadith/4436?note=1" target="_blank" rel="noopener">تعرّف على شرح الحديث</a>.</p>
-  <p class="hadith">وقال ﷺ في صيام ثلاثة أيام من كل شهر: «فإنَّ ذلك صيامُ الدهر»</p>
-  <p>رواه مسلم (1162). وبيّن أهل العلم أن الحسنة بعشر أمثالها؛ فصيام ثلاثة أيام يعادل صيام الشهر، ومع صيام رمضان كل عام يكون كصيام الدهر.</p>
-  <p>ومن وصية النبي ﷺ لأبي هريرة رضي الله عنه: «صيامُ ثلاثةِ أيامٍ من كل شهر» — رواه البخاري (1981) ومسلم (721).</p>
+  <p>${reasonText}</p>
+  ${hadiths}
   <p>التاريخ الهجري غدًا: ${hijri.text} هـ</p>
   <button type="button" id="closeFastingReminder">حاضر، جزاك الله خيرًا</button>
  </div>`;
  document.body.appendChild(overlay);
  document.getElementById('closeFastingReminder').addEventListener('click',()=>{
-  localStorage.setItem(key,'1');overlay.remove();
+  localStorage.setItem(key,'1');
+  overlay.remove();
  });
 }
 
