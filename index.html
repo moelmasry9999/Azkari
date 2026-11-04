@@ -32,6 +32,20 @@ header{
 header h1{margin:0;font-size:30px}
 header p{color:#dcebe1;margin:8px 0 0}
 
+.top-info-bar{
+ flex:0 0 100%;width:100%;display:flex;justify-content:center;align-items:center;
+ flex-wrap:wrap;gap:8px 18px;background:#123b2b;color:#fff;padding:10px 14px;
+ border-radius:12px;font-size:14px;font-weight:700;text-align:center;
+}
+.top-info-bar span{white-space:normal}
+.top-info-bar .next-prayer{color:#ffe6a8}
+@media(max-width:600px){.top-info-bar{font-size:12px;gap:5px 10px;padding:9px 7px}}
+.fasting-overlay{position:fixed;inset:0;background:#102b20b8;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px}
+.fasting-box{background:#fff;max-width:520px;width:100%;border-radius:18px;padding:24px;box-shadow:0 12px 40px #0004;text-align:center;color:#244333}
+.fasting-box h2{color:#24543b;margin-top:0}.fasting-box p{line-height:1.9}
+.fasting-box .hadith{background:#f1f7f1;border-radius:12px;padding:14px;font-family:Amiri,serif;font-size:20px}
+.fasting-box button{border:0;border-radius:10px;padding:11px 22px;background:#287451;color:#fff;font:inherit;font-weight:bold;cursor:pointer}
+
 nav{
  display:flex;
  justify-content:center;
@@ -255,6 +269,11 @@ footer{
 </header>
 
 <nav>
+ <div class="top-info-bar" id="topInfoBar" aria-live="polite">
+  <span id="topGregorianDate">التاريخ الميلادي: —</span>
+  <span id="topHijriDate">التاريخ الهجري: —</span>
+  <span class="next-prayer" id="topNextPrayer">🕌 الأذان القادم: جارٍ تحميل المواقيت…</span>
+ </div>
  <button id="morningBtn" class="active"
  onclick="changePage('morning')">☀️ أذكار الصباح</button>
 
@@ -449,6 +468,24 @@ title:"دعاء العلم والرزق",
 text:`اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا، وَرِزْقًا طَيِّبًا، وَعَمَلًا مُتَقَبَّلًا.`,
 count:1,
 source:"سنن ابن ماجه 925 – بعد صلاة الصبح"
+},
+{
+title:"الصلاة على النبي ﷺ",
+text:`اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ.`,
+count:10,
+source:"ورد في فضل الصلاة عليه عشرًا حين يصبح وعشرًا حين يمسي؛ يُذكر مع التنبيه إلى اختلاف أهل العلم في تصحيح طرق الحديث"
+},
+{
+title:"يا حي يا قيوم برحمتك أستغيث",
+text:`يَا حَيُّ يَا قَيُّومُ، بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ.`,
+count:1,
+source:"سنن النسائي في عمل اليوم والليلة؛ ورد في دعاء الكرب، ويُذكر هنا كدعاء عام لا كعدد مخصوص للصباح"
+},
+{
+title:"الاستغفار",
+text:`أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ.`,
+count:100,
+source:"صحيح البخاري 6307 وصحيح مسلم 2702؛ كان النبي ﷺ يستغفر ويتوب إلى الله في اليوم مائة مرة، وليس العدد خاصًا بالصباح وحده"
 }
 
 ];
@@ -584,6 +621,24 @@ title:"سبحان الله وبحمده",
 text:morning[18].text,
 count:100,
 source:"صحيح مسلم 2692"
+},
+{
+title:"الصلاة على النبي ﷺ",
+text:`اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ.`,
+count:10,
+source:"ورد في فضل الصلاة عليه عشرًا حين يصبح وعشرًا حين يمسي؛ يُذكر مع التنبيه إلى اختلاف أهل العلم في تصحيح طرق الحديث"
+},
+{
+title:"يا حي يا قيوم برحمتك أستغيث",
+text:`يَا حَيُّ يَا قَيُّومُ، بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ.`,
+count:1,
+source:"سنن النسائي في عمل اليوم والليلة؛ دعاء عام وليس عددًا مخصوصًا للمساء"
+},
+{
+title:"الاستغفار",
+text:`أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ.`,
+count:100,
+source:"صحيح البخاري 6307 وصحيح مسلم 2702؛ ورد الاستغفار مائة مرة في اليوم، وليس العدد خاصًا بالمساء وحده"
 }
 
 ];
@@ -917,7 +972,7 @@ const PRAYER_METHOD_EGYPT = 5; // الهيئة المصرية العامة لل�
 let prayerTimesData = null;
 let prayerLocationLabel = localStorage.getItem("azkari_prayer_location_label") || "";
 let prayerCoordinates = JSON.parse(localStorage.getItem("azkari_prayer_coordinates") || "null");
-let prayerCity = localStorage.getItem("azkari_prayer_city") || "";
+let prayerCity = localStorage.getItem("azkari_prayer_city") || "بلبيس";
 let prayerAlarmTimer = null;
 
 function renderPrayerTimesPanel(){
@@ -1007,6 +1062,66 @@ function formatPrayer12(value){
  const d=new Date(); d.setHours(Number(m[1]),Number(m[2]),0,0);
  return d.toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true});
 }
+function getHijriParts(date){
+ try{
+  const fmt=new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'});
+  const parts=fmt.formatToParts(date);const get=t=>parts.find(x=>x.type===t)?.value||'';
+  const normalize=n=>Number(String(n).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)));
+  return {day:normalize(get('day')),month:get('month'),year:normalize(get('year')),text:fmt.format(date).replace(/\s*هـ\s*$/,'')};
+ }catch(e){return {day:0,month:'',year:'',text:'غير متاح على هذا المتصفح'};}
+}
+function updateTopDateBar(){
+ const now=new Date();
+ const g=document.getElementById('topGregorianDate'),h=document.getElementById('topHijriDate');
+ if(g)g.textContent='📅 '+now.toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+ if(h)h.textContent='🌙 '+getHijriParts(now).text+' هـ';
+}
+function updateTopNextPrayer(times){
+ const el=document.getElementById('topNextPrayer');if(!el)return;
+ const prayers=[['الفجر','Fajr'],['الظهر','Dhuhr'],['العصر','Asr'],['المغرب','Maghrib'],['العشاء','Isha']];
+ const now=new Date();let next=null;
+ for(const [name,key] of prayers){
+  const m=String(times[key]||'').match(/(\d{1,2}):(\d{2})/);if(!m)continue;
+  const target=new Date();target.setHours(+m[1],+m[2],0,0);
+  if(target>now){next={name,target};break;}
+ }
+ if(!next){const m=String(times.Fajr||'').match(/(\d{1,2}):(\d{2})/);if(!m){el.textContent='🕌 الأذان القادم: غير متاح';return;}
+  const target=new Date();target.setDate(target.getDate()+1);target.setHours(+m[1],+m[2],0,0);next={name:'الفجر غدًا',target};}
+ const sec=Math.max(0,Math.floor((next.target-now)/1000));
+ const hh=Math.floor(sec/3600),mm=Math.floor((sec%3600)/60),ss=sec%60;
+ el.textContent=`🕌 الأذان القادم: ${next.name} ${next.target.toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true})} — باقي ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+}
+function showFastingReminderIfNeeded(){
+ const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
+ const weekday=tomorrow.getDay();const hijri=getHijriParts(tomorrow);
+ const reasons=[];
+ if(weekday===1)reasons.push('يوم الاثنين');
+ if(weekday===4)reasons.push('يوم الخميس');
+ if([13,14,15].includes(hijri.day))reasons.push('من الأيام البيض (13 أو 14 أو 15 من الشهر الهجري)');
+ if(!reasons.length)return;
+ const key='azkari_fasting_notice_'+localDateKey(new Date());
+ if(localStorage.getItem(key))return;
+ const overlay=document.createElement('div');overlay.className='fasting-overlay';overlay.id='fastingReminderOverlay';
+ const reasonText=reasons.join('، ');
+ overlay.innerHTML=`<div class="fasting-box" role="dialog" aria-modal="true" aria-labelledby="fastingTitle">
+  <h2 id="fastingTitle">🌙 تذكير بصيام الغد</h2>
+  <p>غدًا ${tomorrow.toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long'})}، وهو ${reasonText}.</p>
+  <p class="hadith">قال رسول الله ﷺ: «تُعرَضُ الأعمالُ يومَ الاثنينِ والخميسِ، فأُحبُّ أن يُعرَضَ عملي وأنا صائمٌ»</p>
+  <p>رواه الترمذي (747)، وقال: حديث حسن غريب. ومن فضل هذين اليومين أن الأعمال تُعرض فيهما، وكان النبي ﷺ يحب أن يُعرض عمله وهو صائم.</p>
+  <p class="hadith">وقال رسول الله ﷺ: «مَنْ صَامَ يَوْمًا فِي سَبِيلِ اللهِ بَاعَدَ اللهُ وَجْهَهُ عَنِ النَّارِ سَبْعِينَ خَرِيفًا»</p>
+  <p>رواه البخاري (2840) ومسلم (1153)، وهو حديث صحيح متفق عليه. و«سبعين خريفًا» أي سبعين سنة. <a href="https://hadeethenc.com/ar/browse/hadith/4436?note=1" target="_blank" rel="noopener">تعرّف على شرح الحديث</a>.</p>
+  <p class="hadith">وقال ﷺ في صيام ثلاثة أيام من كل شهر: «فإنَّ ذلك صيامُ الدهر»</p>
+  <p>رواه مسلم (1162). وبيّن أهل العلم أن الحسنة بعشر أمثالها؛ فصيام ثلاثة أيام يعادل صيام الشهر، ومع صيام رمضان كل عام يكون كصيام الدهر.</p>
+  <p>ومن وصية النبي ﷺ لأبي هريرة رضي الله عنه: «صيامُ ثلاثةِ أيامٍ من كل شهر» — رواه البخاري (1981) ومسلم (721).</p>
+  <p>التاريخ الهجري غدًا: ${hijri.text} هـ</p>
+  <button type="button" id="closeFastingReminder">حاضر، جزاك الله خيرًا</button>
+ </div>`;
+ document.body.appendChild(overlay);
+ document.getElementById('closeFastingReminder').addEventListener('click',()=>{
+  localStorage.setItem(key,'1');overlay.remove();
+ });
+}
+
 function showPrayerTimes(times,label){
  prayerTimesData=times;
  const sunrise=parsePrayerClock(times.Sunrise), sunset=parsePrayerClock(times.Sunset||times.Maghrib);
@@ -1021,11 +1136,19 @@ function showPrayerTimes(times,label){
   `<div class="time-card">${emoji} ${name}<strong>${formatPrayer12(times[key])}</strong></div>`
  ).join('');
  document.getElementById('prayerTimesResult').innerHTML=`
+  <div class="time-card" style="background:#e8f3eb;border:1px solid #c9dfcf;margin-bottom:14px">
+   🕌 الأذان القادم<strong id="nextAdhanName">جارٍ الحساب…</strong>
+   <span id="nextAdhanClock" class="muted"></span>
+   <div id="nextAdhanCountdown" style="font-size:22px;font-weight:bold;color:#287451;margin-top:8px">—</div>
+  </div>
   <div class="time-grid">${prayerCards}
    <div class="time-card">🔔 تذكير أذكار الصباح<strong>${fmt(morningReminder)}</strong><span class="muted">قبل الشروق بنصف ساعة</span></div>
    <div class="time-card">🔔 تذكير أذكار المساء<strong>${fmt(eveningReminder)}</strong><span class="muted">قبل الغروب بنصف ساعة</span></div>
   </div>
   <p class="muted">الموقع: ${escapePrayerHtml(label)} | طريقة الحساب: الهيئة المصرية العامة للمساحة | تاريخ اليوم: ${new Date().toLocaleDateString('ar-EG')}</p>`;
+ updateNextAdhanCountdown(times);
+ if(window.azkariNextAdhanTimer) clearInterval(window.azkariNextAdhanTimer);
+ window.azkariNextAdhanTimer=setInterval(()=>updateNextAdhanCountdown(times),1000);
  document.getElementById('prayerLocationStatus').textContent='الموقع المستخدم: '+label;
  try{
   localStorage.setItem('azkari_cached_prayer_times',JSON.stringify({
@@ -1034,6 +1157,31 @@ function showPrayerTimes(times,label){
  }catch(e){}
  schedulePrayerAlerts(morningReminder,eveningReminder);
 }
+function updateNextAdhanCountdown(times){
+ updateTopDateBar();updateTopNextPrayer(times);
+ const names=[['الفجر','Fajr'],['الظهر','Dhuhr'],['العصر','Asr'],['المغرب','Maghrib'],['العشاء','Isha']];
+ const now=new Date();
+ let next=null;
+ for(const [name,key] of names){
+  const m=String(times[key]||'').match(/(\d{1,2}):(\d{2})/);
+  if(!m) continue;
+  const target=new Date();target.setHours(Number(m[1]),Number(m[2]),0,0);
+  if(target>now){next={name,target};break;}
+ }
+ if(!next){
+  const m=String(times.Fajr||'').match(/(\d{1,2}):(\d{2})/);
+  if(!m)return;
+  const target=new Date();target.setDate(target.getDate()+1);target.setHours(Number(m[1]),Number(m[2]),0,0);
+  next={name:'الفجر غدًا',target};
+ }
+ const diff=Math.max(0,next.target-now);
+ const total=Math.floor(diff/1000),hours=Math.floor(total/3600),minutes=Math.floor((total%3600)/60),seconds=total%60;
+ const nameEl=document.getElementById('nextAdhanName'),clockEl=document.getElementById('nextAdhanClock'),countEl=document.getElementById('nextAdhanCountdown');
+ if(nameEl)nameEl.textContent=next.name;
+ if(clockEl)clockEl.textContent='موعد الأذان: '+next.target.toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true});
+ if(countEl)countEl.textContent=`${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')} متبقي`;
+}
+
 async function enablePrayerNotifications(){
  if(!('Notification' in window)){alert('هذا المتصفح لا يدعم إشعارات الويب.');return;}
  const permission=await Notification.requestPermission();
@@ -1060,7 +1208,8 @@ function schedulePrayerAlerts(morningTime,eveningTime){
 }
 
 render();
-
+// إظهار تذكير الصيام عند فتح الموقع؛ كان تعريف الدالة موجودًا دون استدعائها.
+showFastingReminderIfNeeded();
 
 // إحصاءات محلية على هذا الجهاز فقط. لا تُرسل إلى أي خادم في هذه النسخة.
 (function trackLocalUsage(){
