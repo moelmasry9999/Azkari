@@ -251,12 +251,25 @@ footer{
 }
 
 @media(max-width:500px){
+ header{padding:15px 10px}
+ header h1{font-size:22px}
+ header p{font-size:12px;margin-top:4px}
+ .dua-request{font-size:11px;margin-bottom:3px}
+ nav{position:relative;top:auto;display:flex;justify-content:stretch;align-items:stretch;flex-wrap:wrap;gap:6px;padding:8px;overflow:visible}
+ .top-info-bar{flex:0 0 100%;width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 6px;padding:6px 7px;border-radius:9px;font-size:10px;line-height:1.45}
+ .top-info-bar span{white-space:normal}
+ .top-info-bar .next-prayer{grid-column:1/-1}
+ nav button{flex:1 1 calc(50% - 6px);min-width:0;padding:8px 5px;font-size:11px;white-space:normal;line-height:1.4;border-radius:10px}
  .card{padding:13px;gap:10px}
  .counter{width:62px;height:62px;min-width:62px;font-size:21px}
  .dhikr{font-size:20px}
- nav{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto}
- nav button{padding:10px 14px;font-size:12px;flex:0 0 auto}
- header h1{font-size:25px}
+ .container{margin:14px auto;padding:0 10px}
+ .intro{margin-bottom:12px}
+ .progress{padding:14px;margin-bottom:14px}
+ .prayer-times{padding:14px}
+ .prayer-times .time-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .prayer-times .time-card{padding:10px 7px}
+ .prayer-times .time-card strong{font-size:18px}
 }
 
 .prayer-times{background:#fff;border-radius:16px;padding:22px;box-shadow:0 3px 12px #00000008;margin:18px 0}
@@ -282,6 +295,15 @@ footer{
 .install-notice button{border:0;border-radius:10px;padding:9px 13px;background:#f2d88c;color:#173c2b;font:700 13px Cairo,sans-serif;white-space:nowrap;cursor:pointer}
 .install-notice .install-notice-close{background:transparent;color:#fff;font-size:22px;padding:2px 5px;line-height:1}
 @media(min-width:700px){.install-notice{bottom:20px}}
+
+
+.dhikr-reminder-box{background:#f1f7f1;border:1px solid #d8e8dc;border-radius:14px;padding:15px;margin:16px 0}
+.dhikr-reminder-box h3{margin:0 0 7px;color:#24543b;font-size:18px}
+.dhikr-reminder-box p{font-size:13px;line-height:1.8;margin:7px 0}
+.dhikr-reminder-controls{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:10px}
+.dhikr-reminder-controls select{font:inherit;padding:9px 12px;border:1px solid #cbd9ce;border-radius:9px;background:#fff;color:#244333}
+.dhikr-reminder-status{font-size:12px;color:#52685a;margin-top:9px}
+@media(max-width:500px){.dhikr-reminder-box{padding:12px}.dhikr-reminder-controls{gap:7px}.dhikr-reminder-controls select{width:100%}.dhikr-reminder-controls button{flex:1 1 45%;padding:9px 8px}}
 
 </style>
 </head>
@@ -1033,8 +1055,30 @@ function renderPrayerTimesPanel(){
   </div>
   <div id="prayerLocationStatus" class="muted">${prayerLocationLabel ? 'الموقع المحفوظ: '+escapePrayerHtml(prayerLocationLabel) : 'لم يتم تحديد الموقع بعد.'}</div>
   <div id="prayerTimesResult"><p class="muted">حدد موقعك أو اكتب اسم مدينتك لعرض المواقيت.</p></div>
-  <div class="notice">يمكن تثبيت أذكاري والعمل بالأذكار المحفوظة دون إنترنت بعد أول زيارة. تنبيهات هذه النسخة من الويب تحتاج أن تكون الصفحة مفتوحة؛ جدولة إشعارات محلية موثوقة أثناء إغلاق التطبيق ستُضاف في نسخة Android وiPhone الأصلية.</div>
+   <div class="dhikr-reminder-box">
+    <h3>🤍 تذكير بالصلاة على النبي ﷺ</h3>
+    <p>اختر المدة التي تناسبك ليصلك تذكير متكرر: «اللهم صلِّ وسلم على نبينا محمد».</p>
+    <div class="dhikr-reminder-controls">
+     <select id="dhikrReminderInterval" aria-label="مدة التذكير">
+      <option value="15">كل 15 دقيقة</option>
+      <option value="30">كل 30 دقيقة</option>
+      <option value="60" selected>كل ساعة</option>
+      <option value="120">كل ساعتين</option>
+      <option value="180">كل 3 ساعات</option>
+      <option value="240">كل 4 ساعات</option>
+     </select>
+     <button type="button" onclick="startProphetReminder()">▶️ تشغيل التذكير</button>
+     <button type="button" onclick="stopProphetReminder()" style="background:#a83e3e">⏹ إلغاء التذكير</button>
+    </div>
+    <div id="dhikrReminderStatus" class="dhikr-reminder-status">التذكير متوقف حاليًا.</div>
+   </div>
+   <div class="notice">مهم: في نسخة الويب الحالية، التذكير المتكرر يعمل أثناء بقاء أذكاري مفتوحًا. عند إغلاق التطبيق أو المتصفح لن يمكن ضمان وصوله؛ ذلك يحتاج إلى خدمة Push على خادم أو تطبيق أصلي.</div>
   <p class="muted">مصدر الحساب: AlAdhan API، مع اختيار طريقة الهيئة المصرية العامة للمساحة. قد تختلف الدقائق عن تقويم المسجد أو الجهة الرسمية المحلية؛ راجع التقويم المعتمد في منطقتك.</p>`;
+ const savedReminder=getProphetReminderConfig();
+ const reminderSelect=document.getElementById('dhikrReminderInterval');
+ if(savedReminder?.intervalMinutes && reminderSelect)reminderSelect.value=String(savedReminder.intervalMinutes);
+ if(savedReminder?.enabled)updateProphetReminderStatus('التذكير مفعّل: كل '+savedReminder.intervalMinutes+' دقيقة. يعمل أثناء بقاء التطبيق مفتوحًا.');
+ else updateProphetReminderStatus('التذكير متوقف حاليًا.');
  if(prayerCoordinates) fetchPrayerTimes(prayerCoordinates.lat,prayerCoordinates.lon,prayerLocationLabel || 'موقعي');
  else if(prayerCity) fetchPrayerTimesByCity(prayerCity);
  else showCachedPrayerTimesIfAvailable();
@@ -1265,6 +1309,8 @@ function schedulePrayerAlerts(morningTime,eveningTime){
 }
 
 render();
+updateTopDateBar();
+setInterval(updateTopDateBar, 60 * 1000);
 // إظهار تذكير الصيام عند فتح الموقع؛ كان تعريف الدالة موجودًا دون استدعائها.
 showFastingReminderIfNeeded();
 
@@ -1355,6 +1401,117 @@ function schedulePrayerAlertsFromTimings(times){
  if(!sunrise||!sunset)return;
  schedulePrayerAlerts(new Date(sunrise.getTime()-30*60000),new Date(sunset.getTime()-30*60000));
 }
+// تحميل التاريخ ومواقيت اليوم تلقائيًا عند فتح الموقع.
+let autoPrayerLoadedForDate = "";
+async function autoLoadHeaderPrayerTimes(){
+ try{
+  updateTopDateBar();
+  const today=localDateKey();
+  const saved=JSON.parse(localStorage.getItem('azkari_cached_prayer_times')||'null');
+  if(saved?.timings && saved.date===today){
+   prayerTimesData=saved.timings;
+   updateTopNextPrayer(saved.timings);
+   schedulePrayerAlertsFromTimings(saved.timings);
+  }else{
+   const top=document.getElementById('topNextPrayer');
+   if(top)top.textContent='🕌 الأذان القادم: جارٍ تحميل المواقيت…';
+  }
+  const date=new Date();
+  const apiDate=[String(date.getDate()).padStart(2,'0'),String(date.getMonth()+1).padStart(2,'0'),date.getFullYear()].join('-');
+  let url;
+  if(prayerCoordinates?.lat!=null && prayerCoordinates?.lon!=null){
+   url=`${PRAYER_API}/timings/${apiDate}?latitude=${encodeURIComponent(prayerCoordinates.lat)}&longitude=${encodeURIComponent(prayerCoordinates.lon)}&method=${PRAYER_METHOD_EGYPT}`;
+  }else{
+   const city=prayerCity||'بلبيس';
+   url=`${PRAYER_API}/timingsByCity/${apiDate}?city=${encodeURIComponent(city)}&country=Egypt&method=${PRAYER_METHOD_EGYPT}`;
+  }
+  const response=await fetch(url);
+  if(!response.ok)throw new Error('Prayer times unavailable');
+  const json=await response.json();
+  if(json.code===200 && json.data?.timings){
+   const times=json.data.timings;
+   const label=prayerLocationLabel || (prayerCity||'بلبيس')+', مصر';
+   prayerTimesData=times;
+   updateTopNextPrayer(times);
+   schedulePrayerAlertsFromTimings(times);
+   localStorage.setItem('azkari_cached_prayer_times',JSON.stringify({date:today,timings:times,label,updatedAt:new Date().toISOString()}));
+   autoPrayerLoadedForDate=today;
+  }
+ }catch(e){console.warn('Auto prayer header load:',e);}
+}
+autoLoadHeaderPrayerTimes();
+setInterval(()=>{
+ const today=localDateKey();
+ if(today!==autoPrayerLoadedForDate)autoLoadHeaderPrayerTimes();
+},60*1000);
+
+// تذكير متكرر بالصلاة على النبي ﷺ؛ يعمل أثناء بقاء صفحة الويب مفتوحة.
+const PROPHET_REMINDER_KEY='azkari_prophet_reminder_v1';
+let prophetReminderTimer=null;
+function getProphetReminderConfig(){
+ try{return JSON.parse(localStorage.getItem(PROPHET_REMINDER_KEY)||'null');}catch(e){return null;}
+}
+function updateProphetReminderStatus(message){
+ const el=document.getElementById('dhikrReminderStatus');
+ if(el)el.textContent=message;
+}
+async function showProphetReminderNotification(){
+ const title='تذكير بالصلاة على النبي ﷺ';
+ const body='اللهم صلِّ وسلم على نبينا محمد 🤍';
+ try{
+  if('serviceWorker' in navigator){
+   const reg=await navigator.serviceWorker.ready;
+   if(reg?.showNotification){await reg.showNotification(title,{body,icon:'./icon-192.png',badge:'./icon-192.png',tag:'azkari-prophet-reminder',renotify:true});return;}
+  }
+ }catch(e){}
+ if('Notification' in window && Notification.permission==='granted'){
+  new Notification(title,{body,tag:'azkari-prophet-reminder'});
+ }
+}
+function checkProphetReminder(){
+ const config=getProphetReminderConfig();
+ if(!config?.enabled)return;
+ if(Date.now()>=Number(config.nextAt||0)){
+  showProphetReminderNotification();
+  config.nextAt=Date.now()+Number(config.intervalMinutes)*60000;
+  localStorage.setItem(PROPHET_REMINDER_KEY,JSON.stringify(config));
+  updateProphetReminderStatus('التذكير يعمل: كل '+config.intervalMinutes+' دقيقة. يمكنك إلغاؤه في أي وقت.');
+ }
+}
+function startProphetReminderLoop(){
+ if(prophetReminderTimer)clearInterval(prophetReminderTimer);
+ prophetReminderTimer=setInterval(checkProphetReminder,10000);
+ checkProphetReminder();
+}
+async function startProphetReminder(){
+ if(!('Notification' in window)){alert('هذا المتصفح لا يدعم إشعارات الويب.');return;}
+ if(!window.isSecureContext){alert('الإشعارات تحتاج فتح الموقع من رابط HTTPS.');return;}
+ const permission=await Notification.requestPermission();
+ if(permission!=='granted'){alert('لم يتم السماح بالإشعارات. فعّل إشعارات أذكاري من إعدادات المتصفح ثم حاول مرة أخرى.');return;}
+ const select=document.getElementById('dhikrReminderInterval');
+ const intervalMinutes=Number(select?.value||60);
+ const config={enabled:true,intervalMinutes,nextAt:Date.now()+intervalMinutes*60000};
+ localStorage.setItem(PROPHET_REMINDER_KEY,JSON.stringify(config));
+ startProphetReminderLoop();
+ updateProphetReminderStatus('تم تشغيل التذكير: سيصلك إشعار كل '+intervalMinutes+' دقيقة. يمكنك إلغاؤه في أي وقت.');
+}
+function stopProphetReminder(){
+ if(prophetReminderTimer){clearInterval(prophetReminderTimer);prophetReminderTimer=null;}
+ const config=getProphetReminderConfig()||{};
+ config.enabled=false;
+ localStorage.setItem(PROPHET_REMINDER_KEY,JSON.stringify(config));
+ updateProphetReminderStatus('تم إلغاء التذكير. لن تصلك تذكيرات متكررة من أذكاري.');
+}
+(function restoreProphetReminder(){
+ const config=getProphetReminderConfig();
+ if(config?.enabled && 'Notification' in window && Notification.permission==='granted'){
+  startProphetReminderLoop();
+  const select=document.getElementById('dhikrReminderInterval');
+  if(select)select.value=String(config.intervalMinutes||60);
+  updateProphetReminderStatus('التذكير مفعّل: كل '+config.intervalMinutes+' دقيقة. يعمل أثناء بقاء التطبيق مفتوحًا.');
+ }
+})();
+
 (function initializePrayerAlerts(){
  try{
   const saved=JSON.parse(localStorage.getItem('azkari_cached_prayer_times')||'null');
