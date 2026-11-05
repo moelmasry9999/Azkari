@@ -1,4 +1,4 @@
-const CACHE_NAME = 'azkari-pwa-v1';
+const CACHE_NAME = 'azkari-pwa-v2';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -30,6 +30,21 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   event.respondWith((async () => {
+    const isPage = request.mode === 'navigate' || url.pathname.endsWith('/index.html');
+    if (isPage) {
+      try {
+        const response = await fetch(request, { cache: 'no-store' });
+        if (response && response.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          cache.put('./index.html', response.clone());
+        }
+        return response;
+      } catch (error) {
+        const fallback = await caches.match('./index.html');
+        if (fallback) return fallback;
+        throw error;
+      }
+    }
     const cached = await caches.match(request);
     if (cached) return cached;
     try {
@@ -40,10 +55,6 @@ self.addEventListener('fetch', event => {
       }
       return response;
     } catch (error) {
-      if (request.mode === 'navigate') {
-        const fallback = await caches.match('./index.html');
-        if (fallback) return fallback;
-      }
       throw error;
     }
   })());
