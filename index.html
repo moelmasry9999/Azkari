@@ -1059,14 +1059,8 @@ function renderPrayerTimesPanel(){
     <h3>🤍 تذكير بالصلاة على النبي ﷺ</h3>
     <p>اختر المدة التي تناسبك ليصلك تذكير متكرر: «اللهم صلِّ وسلم على نبينا محمد».</p>
     <div class="dhikr-reminder-controls">
-     <select id="dhikrReminderInterval" aria-label="مدة التذكير">
-      <option value="15">كل 15 دقيقة</option>
-      <option value="30">كل 30 دقيقة</option>
-      <option value="60" selected>كل ساعة</option>
-      <option value="120">كل ساعتين</option>
-      <option value="180">كل 3 ساعات</option>
-      <option value="240">كل 4 ساعات</option>
-     </select>
+     <label for="dhikrReminderInterval">التذكير كل (بالدقائق)</label>
+     <input id="dhikrReminderInterval" type="number" inputmode="numeric" min="1" max="1440" step="1" value="60" aria-label="عدد دقائق التذكير" style="max-width:130px">
      <button type="button" onclick="startProphetReminder()">▶️ تشغيل التذكير</button>
      <button type="button" onclick="stopProphetReminder()" style="background:#a83e3e">⏹ إلغاء التذكير</button>
     </div>
@@ -1164,18 +1158,26 @@ function updateTopDateBar(){
 }
 function updateTopNextPrayer(times){
  const el=document.getElementById('topNextPrayer');if(!el)return;
- const prayers=[['الفجر','Fajr'],['الظهر','Dhuhr'],['العصر','Asr'],['المغرب','Maghrib'],['العشاء','Isha']];
- const now=new Date();let next=null;
- for(const [name,key] of prayers){
-  const m=String(times[key]||'').match(/(\d{1,2}):(\d{2})/);if(!m)continue;
-  const target=new Date();target.setHours(+m[1],+m[2],0,0);
-  if(target>now){next={name,target};break;}
- }
- if(!next){const m=String(times.Fajr||'').match(/(\d{1,2}):(\d{2})/);if(!m){el.textContent='🕌 الأذان القادم: غير متاح';return;}
-  const target=new Date();target.setDate(target.getDate()+1);target.setHours(+m[1],+m[2],0,0);next={name:'الفجر غدًا',target};}
- const sec=Math.max(0,Math.floor((next.target-now)/1000));
- const hh=Math.floor(sec/3600),mm=Math.floor((sec%3600)/60),ss=sec%60;
- el.textContent=`🕌 الأذان القادم: ${next.name} ${next.target.toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true})} — باقي ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+ if(window.azkariTopPrayerTimer)clearInterval(window.azkariTopPrayerTimer);
+ const render=()=>{
+  const prayers=[['الفجر','Fajr'],['الظهر','Dhuhr'],['العصر','Asr'],['المغرب','Maghrib'],['العشاء','Isha']];
+  const now=new Date();let next=null;
+  for(const [name,key] of prayers){
+   const m=String(times?.[key]||'').match(/(\\d{1,2}):(\\d{2})/);if(!m)continue;
+   const target=new Date();target.setHours(+m[1],+m[2],0,0);
+   if(target>now){next={name,target};break;}
+  }
+  if(!next){
+   const m=String(times?.Fajr||'').match(/(\\d{1,2}):(\\d{2})/);
+   if(!m){el.textContent='🕌 الأذان القادم: تعذر قراءة المواقيت';return;}
+   const target=new Date();target.setDate(target.getDate()+1);target.setHours(+m[1],+m[2],0,0);next={name:'الفجر غدًا',target};
+  }
+  const sec=Math.max(0,Math.floor((next.target-now)/1000));
+  const hh=Math.floor(sec/3600),mm=Math.floor((sec%3600)/60),ss=sec%60;
+  el.textContent=`🕌 الأذان القادم: ${next.name} ${next.target.toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true})} — باقي ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+ };
+ render();
+ window.azkariTopPrayerTimer=setInterval(render,1000);
 }
 function showFastingReminderIfNeeded(){
  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
@@ -1489,7 +1491,12 @@ async function startProphetReminder(){
  const permission=await Notification.requestPermission();
  if(permission!=='granted'){alert('لم يتم السماح بالإشعارات. فعّل إشعارات أذكاري من إعدادات المتصفح ثم حاول مرة أخرى.');return;}
  const select=document.getElementById('dhikrReminderInterval');
- const intervalMinutes=Number(select?.value||60);
+ const intervalMinutes=Number(select?.value);
+ if(!Number.isInteger(intervalMinutes)||intervalMinutes<1||intervalMinutes>1440){
+  alert('اكتب عددًا صحيحًا من 1 إلى 1440 دقيقة.');
+  select?.focus();
+  return;
+ }
  const config={enabled:true,intervalMinutes,nextAt:Date.now()+intervalMinutes*60000};
  localStorage.setItem(PROPHET_REMINDER_KEY,JSON.stringify(config));
  startProphetReminderLoop();
