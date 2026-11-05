@@ -1175,7 +1175,7 @@ function updateTopNextPrayer(times){
   }
   const sec=Math.max(0,Math.floor((next.target-now)/1000));
   const hh=Math.floor(sec/3600),mm=Math.floor((sec%3600)/60),ss=sec%60;
-  el.textContent=\`🕌 الأذان القادم: \${next.name} \${next.target.toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true})} — باقي \${String(hh).padStart(2,'0')}:\${String(mm).padStart(2,'0')}:\${String(ss).padStart(2,'0')}\`;
+  el.textContent=`🕌 الأذان القادم: ${next.name} ${next.target.toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true})} — باقي ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
  };
  render();
  window.azkariTopPrayerTimer=setInterval(render,1000);
