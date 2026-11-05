@@ -1163,18 +1163,19 @@ function updateTopNextPrayer(times){
   const prayers=[['الفجر','Fajr'],['الظهر','Dhuhr'],['العصر','Asr'],['المغرب','Maghrib'],['العشاء','Isha']];
   const now=new Date();let next=null;
   for(const [name,key] of prayers){
-   const m=String(times?.[key]||'').match(/(\\d{1,2}):(\\d{2})/);if(!m)continue;
-   const target=new Date();target.setHours(+m[1],+m[2],0,0);
+   const m=String(times?.[key]||'').match(/(\d{1,2}):(\d{2})/);
+   if(!m)continue;
+   const target=new Date();target.setHours(Number(m[1]),Number(m[2]),0,0);
    if(target>now){next={name,target};break;}
   }
   if(!next){
-   const m=String(times?.Fajr||'').match(/(\\d{1,2}):(\\d{2})/);
+   const m=String(times?.Fajr||'').match(/(\d{1,2}):(\d{2})/);
    if(!m){el.textContent='🕌 الأذان القادم: تعذر قراءة المواقيت';return;}
-   const target=new Date();target.setDate(target.getDate()+1);target.setHours(+m[1],+m[2],0,0);next={name:'الفجر غدًا',target};
+   const target=new Date();target.setDate(target.getDate()+1);target.setHours(Number(m[1]),Number(m[2]),0,0);next={name:'الفجر غدًا',target};
   }
   const sec=Math.max(0,Math.floor((next.target-now)/1000));
   const hh=Math.floor(sec/3600),mm=Math.floor((sec%3600)/60),ss=sec%60;
-  el.textContent=`🕌 الأذان القادم: ${next.name} ${next.target.toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true})} — باقي ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  el.textContent=\`🕌 الأذان القادم: \${next.name} \${next.target.toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true})} — باقي \${String(hh).padStart(2,'0')}:\${String(mm).padStart(2,'0')}:\${String(ss).padStart(2,'0')}\`;
  };
  render();
  window.azkariTopPrayerTimer=setInterval(render,1000);
