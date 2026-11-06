@@ -1150,12 +1150,16 @@ async function fetchPrayerTimes(lat,lon,label){
   showPrayerTimes(json.data.timings,label);
  }catch(e){if(box)box.innerHTML=`<p>تعذر جلب المواقيت: ${escapePrayerHtml(e.message)}. جرّب كتابة اسم المدينة.</p>`;}
 }
+function normalizePrayerDigits(value){
+ const digits='٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹';
+ return String(value||'').replace(/[٠-٩۰-۹]/g,d=>String(digits.indexOf(d)%10));
+}
 function parsePrayerClock(value){
- const match=String(value||'').match(/(\d{1,2}):(\d{2})/); if(!match)return null;
+ const match=normalizePrayerDigits(value).match(/(\d{1,2}):(\d{2})/); if(!match)return null;
  const d=new Date();d.setHours(Number(match[1]),Number(match[2]),0,0);return d;
 }
 function formatPrayer12(value){
- const m=String(value||'').match(/(\d{1,2}):(\d{2})/);
+ const m=normalizePrayerDigits(value).match(/(\d{1,2}):(\d{2})/);
  if(!m) return '—';
  const d=new Date(); d.setHours(Number(m[1]),Number(m[2]),0,0);
  return d.toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true});
@@ -1181,12 +1185,12 @@ function updateTopNextPrayer(times){
   const prayers=[['الفجر','Fajr'],['الظهر','Dhuhr'],['العصر','Asr'],['المغرب','Maghrib'],['العشاء','Isha']];
   const now=new Date();let next=null;
   for(const [name,key] of prayers){
-   const m=String(times?.[key]||'').match(/(\d{1,2}):(\d{2})/);if(!m)continue;
+   const m=normalizePrayerDigits(times?.[key]).match(/(\d{1,2}):(\d{2})/);if(!m)continue;
    const target=new Date();target.setHours(+m[1],+m[2],0,0);
    if(target>now){next={name,target};break;}
   }
   if(!next){
-   const m=String(times?.Fajr||'').match(/(\d{1,2}):(\d{2})/);
+   const m=normalizePrayerDigits(times?.Fajr).match(/(\d{1,2}):(\d{2})/);
    if(!m){el.textContent='🕌 الأذان القادم: تعذر قراءة المواقيت';return;}
    const target=new Date();target.setDate(target.getDate()+1);target.setHours(+m[1],+m[2],0,0);next={name:'الفجر غدًا',target};
   }
@@ -1284,7 +1288,7 @@ function updateNextAdhanCountdown(times){
  const now=new Date();
  let next=null;
  for(const [name,key] of names){
-  const m=String(times[key]||'').match(/(\d{1,2}):(\d{2})/);
+  const m=normalizePrayerDigits(times[key]).match(/(\d{1,2}):(\d{2})/);
   if(!m) continue;
   const target=new Date();target.setHours(Number(m[1]),Number(m[2]),0,0);
   if(target>now){next={name,target};break;}
@@ -1428,11 +1432,12 @@ async function autoLoadHeaderPrayerTimes(){
   updateTopDateBar();
   const today=localDateKey();
   const saved=JSON.parse(localStorage.getItem('azkari_cached_prayer_times')||'null');
-  if(saved?.timings && saved.date===today){
+  if(saved?.timings && saved.date===today && parsePrayerClock(saved.timings.Fajr)){
    prayerTimesData=saved.timings;
    updateTopNextPrayer(saved.timings);
    schedulePrayerAlertsFromTimings(saved.timings);
   }else{
+   localStorage.removeItem('azkari_cached_prayer_times');
    const top=document.getElementById('topNextPrayer');
    if(top)top.textContent='🕌 الأذان القادم: جارٍ تحميل المواقيت…';
   }
@@ -1448,7 +1453,7 @@ async function autoLoadHeaderPrayerTimes(){
   const response=await fetch(url);
   if(!response.ok)throw new Error('Prayer times unavailable');
   const json=await response.json();
-  if(json.code===200 && json.data?.timings){
+  if(json.code===200 && json.data?.timings && parsePrayerClock(json.data.timings.Fajr)){
    const times=json.data.timings;
    const label=prayerLocationLabel || (prayerCity||'بلبيس')+', مصر';
    prayerTimesData=times;
@@ -1457,7 +1462,11 @@ async function autoLoadHeaderPrayerTimes(){
    localStorage.setItem('azkari_cached_prayer_times',JSON.stringify({date:today,timings:times,label,updatedAt:new Date().toISOString()}));
    autoPrayerLoadedForDate=today;
   }
- }catch(e){console.warn('Auto prayer header load:',e);}
+ }catch(e){
+  console.warn('Auto prayer header load:',e);
+  const top=document.getElementById('topNextPrayer');
+  if(top && !prayerTimesData)top.textContent='🕌 الأذان القادم: تعذر تحميل المواقيت — افتح صفحة مواقيت الصلاة وحدد المدينة';
+ }
 }
 autoLoadHeaderPrayerTimes();
 setInterval(()=>{
