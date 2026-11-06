@@ -327,7 +327,7 @@ footer{
 .auth-card input{display:block;width:100%;margin:8px 0 14px;padding:11px;border:1px solid #ccd8ce;border-radius:9px;font:14px Cairo,sans-serif}
 .auth-card button{margin:4px;padding:9px 13px;border:0;border-radius:8px;background:#287451;color:white;font:700 13px Cairo,sans-serif}
 </style>
-<div class="account-strip"><span id="accountLabel">تستخدم أذكاري كزائر</span><button id="accountOpen" type="button">تسجيل الدخول / حساب جديد</button><button id="accountOut" type="button" hidden>خروج</button></div>
+
 <div class="auth-panel" id="authPanel" hidden><div class="auth-card" dir="rtl">
 <button id="authClose" type="button">إغلاق</button><h2>حساب أذكاري</h2><p>تسجيل الدخول اختياري ويمكنك المتابعة كزائر.</p>
 <form id="authForm"><label>البريد الإلكتروني</label><input id="authEmail" type="email" required autocomplete="email"><label>كلمة المرور</label><input id="authPassword" type="password" minlength="6" required autocomplete="current-password"><button id="authSubmit" type="submit">تسجيل الدخول</button><button id="authToggle" type="button">إنشاء حساب جديد</button></form>
@@ -339,6 +339,7 @@ footer{
  <h1>🌿 أذكاري</h1>
  <p>أذكار الصباح والمساء من القرآن والسنة</p>
 </header>
+<div class="account-strip" id="accountStrip" style="display:flex!important;visibility:visible!important;opacity:1!important;position:relative;z-index:20;margin:12px auto;max-width:760px;border:2px solid #287451;border-radius:14px"><span id="accountLabel">تستخدم أذكاري كزائر</span><button id="accountOpen" type="button" style="display:inline-block!important;visibility:visible!important">تسجيل الدخول / حساب جديد</button><button id="accountOut" type="button" hidden>خروج</button></div>
 
 <nav>
  <div class="top-info-bar" id="topInfoBar" aria-live="polite">
