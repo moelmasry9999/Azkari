@@ -330,15 +330,14 @@ footer{
 
 <div class="auth-panel" id="authPanel" hidden><div class="auth-card" dir="rtl">
 <button id="authClose" type="button">إغلاق</button><h2>حساب أذكاري</h2><p>تسجيل الدخول اختياري ويمكنك المتابعة كزائر.</p>
-<form id="authForm"><label>البريد الإلكتروني</label><input id="authEmail" type="email" required autocomplete="email"><label>كلمة المرور</label><input id="authPassword" type="password" minlength="6" required autocomplete="current-password"><button id="authSubmit" type="submit">تسجيل الدخول</button><button id="authToggle" type="button">إنشاء حساب جديد</button></form>
-<button id="authReset" type="button">نسيت كلمة المرور؟</button><p id="authFeedback" aria-live="polite"></p>
+<form id="authForm"><div id="authNameWrap" hidden><label>الاسم الظاهر للآخرين</label><input id="authName" type="text" maxlength="24" autocomplete="nickname" placeholder="اكتب اسمك الذي سيظهر في لوحة المتصدرين"></div><label>البريد الإلكتروني</label><input id="authEmail" type="email" required autocomplete="email"><label>كلمة المرور</label><input id="authPassword" type="password" minlength="6" required autocomplete="current-password"><button id="authSubmit" type="submit">تسجيل الدخول</button><button id="authToggle" type="button">إنشاء حساب جديد</button></form>
+<button id="authReset" type="button">نسيت كلمة المرور؟</button><button id="accountOut" type="button" hidden>تسجيل الخروج</button><p id="authFeedback" aria-live="polite"></p>
 </div></div>
 
 <header>
 
  <h1>🌿 أذكاري</h1>
  <p>أذكار الصباح والمساء من القرآن والسنة</p>
-<div class="account-strip" id="accountStrip" style="display:flex!important;visibility:visible!important;opacity:1!important;position:relative;z-index:999;margin:12px auto;max-width:760px;border:2px solid #287451;border-radius:14px;background:#edf4ee;padding:12px;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap"><span id="accountLabel" style="display:inline-block!important;visibility:visible!important;color:#244333">تستخدم أذكاري كزائر</span><button id="accountOpen" type="button" style="display:inline-block!important;visibility:visible!important;opacity:1!important;background:#287451!important;color:white!important;border:0!important;padding:12px 20px!important;border-radius:10px!important;font-weight:700!important">تسجيل الدخول / حساب جديد</button><button id="accountOut" type="button" hidden>خروج</button></div>
 </header>
 
 <nav>
@@ -363,6 +362,9 @@ footer{
  <button id="distressBtn" onclick="changePage('distress')">💚 الكرب</button>
  <button id="trackerBtn" onclick="changePage('tracker')">📅 المتابعة اليومية</button>
  <button id="prayerTimesBtn" onclick="changePage('prayerTimes')">🕰️ مواقيت الصلاة والتنبيهات</button>
+ <button id="tasbeehBtn" onclick="changePage('tasbeeh')">📿 المسبحة</button>
+ <button id="leaderboardBtn" onclick="changePage('leaderboard')">🏆 الأكثر ذكرًا</button>
+ <button id="accountOpen" type="button">👤 الحساب</button>
 </nav>
 
 <div class="container">
@@ -385,6 +387,8 @@ footer{
 
  <div id="adhkar"></div>
   <div id="trackerView" style="display:none"></div>
+ <section id="tasbeehView" class="prayer-times" style="display:none"></section>
+ <section id="leaderboardView" class="prayer-times" style="display:none"></section>
   <section id="prayerTimesView" class="prayer-times" style="display:none"></section>
 
  <button class="reset" id="resetBtn" onclick="resetPage()">
@@ -843,17 +847,33 @@ function render(){
  const progressBox = document.getElementById("progressBox");
  const resetBtn = document.getElementById("resetBtn");
 
+ if(page === "tasbeeh"){
+  intro.style.display="none";progressBox.style.display="none";container.style.display="none";
+  resetBtn.style.display="none";trackerView.style.display="none";
+  document.getElementById("prayerTimesView").style.display="none";
+  document.getElementById("leaderboardView").style.display="none";
+  const v=document.getElementById("tasbeehView");v.style.display="block";renderTasbeeh();return;
+ }
+ if(page === "leaderboard"){
+  intro.style.display="none";progressBox.style.display="none";container.style.display="none";
+  resetBtn.style.display="none";trackerView.style.display="none";
+  document.getElementById("prayerTimesView").style.display="none";
+  document.getElementById("tasbeehView").style.display="none";
+  const v=document.getElementById("leaderboardView");v.style.display="block";renderLeaderboard();return;
+ }
  if(page === "prayerTimes"){
   intro.style.display = "none";
   progressBox.style.display = "none";
   container.style.display = "none";
   resetBtn.style.display = "none";
   trackerView.style.display = "none";
+  document.getElementById("tasbeehView").style.display="none";document.getElementById("leaderboardView").style.display="none";
   document.getElementById("prayerTimesView").style.display = "block";
   renderPrayerTimesPanel();
   return;
  }
  document.getElementById("prayerTimesView").style.display = "none";
+ document.getElementById("tasbeehView").style.display="none";document.getElementById("leaderboardView").style.display="none";
 
  if(page === "tracker"){
   intro.style.display = "none";
@@ -941,6 +961,7 @@ function increment(index){
 
  if(counts[key] > 0){
   counts[key]--;
+  if(window.azkariRecordDhikr)window.azkariRecordDhikr(1);
   save();
   render();
  }
@@ -990,6 +1011,29 @@ function updateProgress(){
  " ذكر — المتبقي " + (total-completed);
 }
 
+
+let tasbeehCount=Number(localStorage.getItem("azkari_tasbeeh_count")||0);
+let tasbeehPhrase=localStorage.getItem("azkari_tasbeeh_phrase")||"سبحان الله";
+function renderTasbeeh(){
+ const v=document.getElementById("tasbeehView");
+ v.innerHTML=`<h2>📿 المسبحة الإلكترونية</h2><p>اختر الذكر واضغط على العداد مع كل تسبيحة.</p>
+ <select id="tasbeehPhrase" style="font:inherit;padding:10px;border:1px solid #cbd9ce;border-radius:10px;width:100%;max-width:360px">
+ ${["سبحان الله","الحمد لله","الله أكبر","لا إله إلا الله","أستغفر الله","اللهم صل وسلم على نبينا محمد","سبحان الله وبحمده","لا حول ولا قوة إلا بالله"].map(x=>`<option ${x===tasbeehPhrase?"selected":""}>${x}</option>`).join("")}</select>
+ <div style="text-align:center;padding:24px">
+ <div id="tasbeehCount" style="font-size:56px;font-weight:bold;color:#287451">${tasbeehCount}</div>
+ <button id="tasbeehTap" style="border:0;border-radius:50%;width:170px;height:170px;background:#287451;color:white;font:700 23px Cairo,sans-serif;cursor:pointer">سبّح الآن</button>
+ <p id="tasbeehStatus">كل ضغطة تُحسب تسبيحة واحدة</p>
+ <button id="tasbeehReset" style="border:0;border-radius:10px;padding:10px 18px;background:#a83e3e;color:white;font:inherit">تصفير العداد</button></div>`;
+ document.getElementById("tasbeehPhrase").onchange=e=>{tasbeehPhrase=e.target.value;localStorage.setItem("azkari_tasbeeh_phrase",tasbeehPhrase);};
+ document.getElementById("tasbeehTap").onclick=()=>{tasbeehCount++;localStorage.setItem("azkari_tasbeeh_count",String(tasbeehCount));document.getElementById("tasbeehCount").textContent=tasbeehCount;if(window.azkariRecordDhikr)window.azkariRecordDhikr(1);};
+ document.getElementById("tasbeehReset").onclick=()=>{if(confirm("هل تريد تصفير عداد المسبحة؟")){tasbeehCount=0;localStorage.setItem("azkari_tasbeeh_count","0");document.getElementById("tasbeehCount").textContent="0";}};
+}
+function renderLeaderboard(){
+ const v=document.getElementById("leaderboardView");
+ v.innerHTML="<h2>🏆 الأكثر ذكرًا</h2><p>الترتيب حسب عدد مرات الضغط على عدادات الأذكار والمسبحة، ويظهر الاسم الذي اختاره صاحبه فقط.</p><p id='leaderboardStatus'>جارٍ تحميل المتصدرين…</p><ol id='leaderboardList'></ol>";
+ if(window.azkariLoadLeaderboard)window.azkariLoadLeaderboard();
+ else document.getElementById("leaderboardStatus").textContent="سجّل الدخول لعرض ترتيب المستخدمين بعد تفعيل قاعدة البيانات.";
+}
 function resetPage(){
 
  if(confirm("هل تريد إعادة عدادات هذه الصفحة؟")){
@@ -1601,19 +1645,57 @@ function stopProphetReminder(){
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
-import { getAuth, setPersistence, browserLocalPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+import { getAuth, setPersistence, browserLocalPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, collection, query, orderBy, limit, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 const app=initializeApp({apiKey:"AIzaSyDsINtKfyC8T9GqFq9BTGjOGpO-L8WiCd8",authDomain:"azkari-477f1.firebaseapp.com",projectId:"azkari-477f1",storageBucket:"azkari-477f1.firebasestorage.app",messagingSenderId:"42201529733",appId:"1:42201529733:web:ee5793fa3e609e9e8f98ec"});
-const auth=getAuth(app);auth.languageCode="ar";
+const auth=getAuth(app);auth.languageCode="ar";const db=getFirestore(app);
 const $=id=>document.getElementById(id);
-let register=false;
+let register=false;let currentUser=null;
 const panel=$("authPanel"),feedback=$("authFeedback");
 const msg=t=>feedback.textContent=t;
 await setPersistence(auth,browserLocalPersistence);
-onAuthStateChanged(auth,user=>{$("accountLabel").textContent=user?"مرحبًا، "+user.email:"تستخدم أذكاري كزائر";$("accountOut").hidden=!user;$("accountOpen").textContent=user?"إدارة الحساب":"تسجيل الدخول / حساب جديد";});
+onAuthStateChanged(auth,async user=>{
+ currentUser=user;
+ $("accountOut").hidden=!user;
+ $("accountOpen").textContent=user?"👤 حسابي":"👤 تسجيل الدخول";
+ if(user){
+  let profileName=user.displayName||"";
+  try{const snap=await getDoc(doc(db,"users",user.uid));if(snap.exists())profileName=snap.data().displayName||profileName;}catch(e){}
+  if(!profileName){
+   const entered=prompt("اكتب الاسم الذي سيظهر في لوحة الأكثر ذكرًا:");
+   if(entered&&entered.trim().length>=2){profileName=entered.trim().slice(0,24);await updateProfile(user,{displayName:profileName});await setDoc(doc(db,"users",user.uid),{displayName:profileName,totalDhikr:0},{merge:true});}
+  }
+  if(profileName){try{await setDoc(doc(db,"users",user.uid),{displayName:profileName},{merge:true});}catch(e){}}
+ } 
+});
+window.azkariRecordDhikr=async(amount=1)=>{
+ if(!currentUser)return;
+ try{await setDoc(doc(db,"users",currentUser.uid),{displayName:(currentUser.displayName||"مستخدم أذكاري"),totalDhikr:increment(amount),updatedAt:serverTimestamp()},{merge:true});}
+ catch(e){console.warn("Leaderboard write failed",e);}
+};
+window.azkariLoadLeaderboard=async()=>{
+ const status=$("leaderboardStatus"),list=$("leaderboardList");
+ if(!status||!list)return;
+ if(!currentUser){status.textContent="للمشاركة في لوحة الأكثر ذكرًا، سجّل الدخول من زر الحساب.";return;}
+ try{
+  const snap=await getDocs(query(collection(db,"users"),orderBy("totalDhikr","desc"),limit(20)));
+  list.innerHTML="";
+  let rank=0;
+  snap.forEach(d=>{rank++;const x=d.data();const li=document.createElement("li");li.style.cssText="padding:12px;margin:8px 0;background:#f1f7f1;border-radius:10px";li.textContent=rank+". "+(x.displayName||"مستخدم أذكاري")+" — "+Number(x.totalDhikr||0).toLocaleString("ar-EG")+" ذكر";list.appendChild(li);});
+  status.textContent=snap.empty?"لا توجد مشاركات بعد. ابدأ الذكر لتظهر هنا.":"أعلى 20 مستخدمًا";
+ }catch(e){status.textContent="تعذر تحميل الترتيب. تأكد من تفعيل Firestore وقواعد الأمان.";console.warn(e);}
+};
 $("accountOpen").onclick=()=>{panel.hidden=false;};
 $("authClose").onclick=()=>panel.hidden=true;
-$("authToggle").onclick=()=>{register=!register;$("authSubmit").textContent=register?"إنشاء الحساب":"تسجيل الدخول";$("authToggle").textContent=register?"لديك حساب؟ دخول":"إنشاء حساب جديد";};
-$("authForm").onsubmit=async e=>{e.preventDefault();const email=$("authEmail").value.trim(),password=$("authPassword").value;try{if(register)await createUserWithEmailAndPassword(auth,email,password);else await signInWithEmailAndPassword(auth,email,password);msg("تم بنجاح.");setTimeout(()=>panel.hidden=true,700);}catch(err){const m={"auth/email-already-in-use":"البريد مسجل بالفعل.","auth/invalid-credential":"البريد أو كلمة المرور غير صحيحة.","auth/weak-password":"كلمة المرور يجب ألا تقل عن 6 أحرف.","auth/invalid-email":"البريد الإلكتروني غير صحيح.","auth/operation-not-allowed":"فعّل Email/Password في Firebase."};msg(m[err.code]||"تعذر إتمام العملية. تحقق من الإنترنت وإعدادات Firebase.");}};
+$("authToggle").onclick=()=>{register=!register;$("authNameWrap").hidden=!register;$("authName").required=register;$("authSubmit").textContent=register?"إنشاء الحساب":"تسجيل الدخول";$("authToggle").textContent=register?"لديك حساب؟ دخول":"إنشاء حساب جديد";};
+$("authForm").onsubmit=async e=>{e.preventDefault();const email=$("authEmail").value.trim(),password=$("authPassword").value;try{if(register){
+ const displayName=$("authName").value.trim();
+ if(displayName.length<2)throw Object.assign(new Error("اكتب اسمًا من حرفين على الأقل."),{code:"name/invalid"});
+ const cred=await createUserWithEmailAndPassword(auth,email,password);
+ await updateProfile(cred.user,{displayName});
+ await setDoc(doc(db,"users",cred.user.uid),{displayName,totalDhikr:0,createdAt:serverTimestamp()});
+ }else await signInWithEmailAndPassword(auth,email,password);
+ msg("تم بنجاح.");setTimeout(()=>panel.hidden=true,700);}catch(err){const m={"name/invalid":"اكتب اسمًا ظاهرًا من حرفين على الأقل.","auth/email-already-in-use":"البريد مسجل بالفعل.","auth/invalid-credential":"البريد أو كلمة المرور غير صحيحة.","auth/weak-password":"كلمة المرور يجب ألا تقل عن 6 أحرف.","auth/invalid-email":"البريد الإلكتروني غير صحيح.","auth/operation-not-allowed":"فعّل Email/Password في Firebase."};msg(m[err.code]||"تعذر إتمام العملية. تحقق من الإنترنت وإعدادات Firebase.");}};
 $("authReset").onclick=async()=>{const email=$("authEmail").value.trim();if(!email){msg("اكتب بريدك الإلكتروني أولًا.");return;}try{await sendPasswordResetEmail(auth,email);msg("تم إرسال رابط استعادة كلمة المرور إذا كان البريد مسجلًا.");}catch(err){msg("تعذر إرسال رابط الاستعادة.");}};
 $("accountOut").onclick=async()=>{try{await signOut(auth);msg("تم تسجيل الخروج.");}catch(e){msg("تعذر تسجيل الخروج.");}};
 </script>
