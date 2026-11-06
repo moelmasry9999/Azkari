@@ -989,7 +989,7 @@ function changePage(newPage){
  if(activeButton) activeButton.classList.add("active");
 
  render();
-
+ if(window.azkariTrackPage)window.azkariTrackPage(page);
  window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -1652,9 +1652,13 @@ function stopProphetReminder(){
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+import { getAnalytics, isSupported, logEvent } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-analytics.js";
 import { getAuth, setPersistence, browserLocalPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, collection, query, orderBy, limit, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
-const app=initializeApp({apiKey:"AIzaSyDsINtKfyC8T9GqFq9BTGjOGpO-L8WiCd8",authDomain:"azkari-477f1.firebaseapp.com",projectId:"azkari-477f1",storageBucket:"azkari-477f1.firebasestorage.app",messagingSenderId:"42201529733",appId:"1:42201529733:web:ee5793fa3e609e9e8f98ec"});
+const app=initializeApp({apiKey:"AIzaSyDsINtKfyC8T9GqFq9BTGjOGpO-L8WiCd8",authDomain:"azkari-477f1.firebaseapp.com",projectId:"azkari-477f1",storageBucket:"azkari-477f1.firebasestorage.app",messagingSenderId:"42201529733",appId:"1:42201529733:web:ee5793fa3e609e9e8f98ec",measurementId:"G-CTQGQCVGXS"});
+let azkariAnalytics=null;
+isSupported().then(ok=>{if(ok){azkariAnalytics=getAnalytics(app);logEvent(azkariAnalytics,"page_view",{page_title:document.title,page_location:location.href,page_path:location.pathname});}}).catch(err=>console.warn("Analytics unavailable",err));
+window.azkariTrackPage=(pageName)=>{if(azkariAnalytics)logEvent(azkariAnalytics,"page_view",{page_title:"أذكاري - "+pageName,page_location:location.href,page_path:location.pathname+"#"+pageName});};
 const auth=getAuth(app);auth.languageCode="ar";const db=getFirestore(app);
 const $=id=>document.getElementById(id);
 let register=false;let currentUser=null;
