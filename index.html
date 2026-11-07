@@ -331,7 +331,8 @@ footer{
 </style>
 
 <div class="auth-panel" id="authPanel" hidden><div class="auth-card" dir="rtl">
-<button id="authClose" type="button">إغلاق</button><h2>حساب أذكاري</h2><p>تسجيل الدخول اختياري ويمكنك المتابعة كزائر.</p>
+<button id="authClose" type="button">إغلاق</button><h2>حساب أذكاري</h2><p>سجّل حسابًا لحفظ مشاركتك في لوحة الأكثر ذكرًا.</p>
+<div id="profileEditWrap" hidden><label for="profileDisplayName">اسمك الظاهر في لوحة الأكثر ذكرًا</label><input id="profileDisplayName" type="text" maxlength="24" autocomplete="nickname" placeholder="اكتب اسمك الجديد"><button id="profileSave" type="button">حفظ الاسم الجديد</button></div>
 <form id="authForm"><div id="authNameWrap" hidden><label>الاسم الظاهر للآخرين</label><input id="authName" type="text" maxlength="24" autocomplete="nickname" placeholder="اكتب اسمك الذي سيظهر في لوحة المتصدرين"></div><label>البريد الإلكتروني</label><input id="authEmail" type="email" required autocomplete="email"><label>كلمة المرور</label><input id="authPassword" type="password" minlength="6" required autocomplete="current-password"><button id="authSubmit" type="submit">تسجيل الدخول</button><button id="authToggle" type="button">إنشاء حساب جديد</button></form>
 <button id="authReset" type="button">نسيت كلمة المرور؟</button><button id="accountOut" type="button" hidden>تسجيل الخروج</button><p id="authFeedback" aria-live="polite"></p>
 </div></div>
@@ -376,6 +377,7 @@ footer{
   <p>ابدأ يومك بذكر الله ❤️</p>
  </div>
 
+ <div id="guestRegisterReminder" dir="rtl" style="display:none;margin:14px 0;padding:14px;border:1px solid #d7e8dc;border-radius:14px;background:#f2faf4;text-align:center;color:#244333"><strong>🤍 شاركنا الذكر واحفظ ترتيبك!</strong><p style="margin:7px 0">سجّل حسابًا مجانيًا حتى يظهر اسمك في لوحة الأكثر ذكرًا وتُحفظ مشاركتك.</p><button id="guestRegisterBtn" type="button" style="border:0;border-radius:9px;padding:9px 16px;background:#287451;color:white;font:700 14px Cairo,sans-serif">سجّل الآن</button></div>
  <div class="progress" id="progressBox">
   <div class="progress-info">
    <span>إنجاز الأذكار</span>
@@ -1669,16 +1671,27 @@ onAuthStateChanged(auth,async user=>{
  currentUser=user;
  $("accountOut").hidden=!user;
  $("accountOpen").textContent=user?"👤 حسابي":"👤 تسجيل الدخول";
+ $("guestRegisterReminder").style.display=user?"none":"block";
+ $("profileEditWrap").hidden=!user;
  if(user){
   let profileName=user.displayName||"";
   try{const snap=await getDoc(doc(db,"users",user.uid));if(snap.exists())profileName=snap.data().displayName||profileName;}catch(e){}
+  $("profileDisplayName").value=profileName;
   if(!profileName){
    const entered=prompt("اكتب الاسم الذي سيظهر في لوحة الأكثر ذكرًا:");
-   if(entered&&entered.trim().length>=2){profileName=entered.trim().slice(0,24);await updateProfile(user,{displayName:profileName});await setDoc(doc(db,"users",user.uid),{displayName:profileName,totalDhikr:0},{merge:true});}
+   if(entered&&entered.trim().length>=2){profileName=entered.trim().slice(0,24);await updateProfile(user,{displayName:profileName});await setDoc(doc(db,"users",user.uid),{displayName:profileName,totalDhikr:0},{merge:true});$("profileDisplayName").value=profileName;}
   }
   if(profileName){try{await setDoc(doc(db,"users",user.uid),{displayName:profileName},{merge:true});}catch(e){}}
- } 
+ }
 });
+$("guestRegisterBtn").onclick=()=>{panel.hidden=false;register=true;$("authNameWrap").hidden=false;$("authName").required=true;$("authSubmit").textContent="إنشاء الحساب";$("authToggle").textContent="لديك حساب؟ دخول";};
+$("profileSave").onclick=async()=>{
+ if(!currentUser)return;
+ const displayName=$("profileDisplayName").value.trim();
+ if(displayName.length<2){msg("الاسم يجب ألا يقل عن حرفين.");return;}
+ try{await updateProfile(currentUser,{displayName});await setDoc(doc(db,"users",currentUser.uid),{displayName},{merge:true});msg("تم تحديث اسمك بنجاح.");}
+ catch(e){msg("تعذر تحديث الاسم. حاول مرة أخرى.");console.warn("Profile name update failed",e);}
+};
 window.azkariRecordDhikr=async(amount=1)=>{
  if(!currentUser)return;
  try{await setDoc(doc(db,"users",currentUser.uid),{displayName:(currentUser.displayName||"مستخدم أذكاري"),totalDhikr:increment(amount),updatedAt:serverTimestamp()},{merge:true});}
@@ -1687,13 +1700,14 @@ window.azkariRecordDhikr=async(amount=1)=>{
 window.azkariLoadLeaderboard=async()=>{
  const status=$("leaderboardStatus"),list=$("leaderboardList");
  if(!status||!list)return;
- if(!currentUser){status.textContent="للمشاركة في لوحة الأكثر ذكرًا، سجّل الدخول من زر الحساب.";return;}
+ if(!currentUser){status.textContent="سجّل الدخول لعرض لوحة الترتيب والمشاركة فيها.";return;}
  try{
   const snap=await getDocs(query(collection(db,"users"),orderBy("totalDhikr","desc"),limit(20)));
   list.innerHTML="";
   let rank=0;
-  snap.forEach(d=>{rank++;const x=d.data();const li=document.createElement("li");li.style.cssText="padding:12px;margin:8px 0;background:#f1f7f1;border-radius:10px";li.textContent=rank+". "+(x.displayName||"مستخدم أذكاري")+" — "+Number(x.totalDhikr||0).toLocaleString("ar-EG")+" ذكر";list.appendChild(li);});
-  status.textContent=snap.empty?"لا توجد مشاركات بعد. ابدأ الذكر لتظهر هنا.":"أعلى 20 مستخدمًا";
+  const rankNames=["🥇 المركز الأول","🥈 المركز الثاني","🥉 المركز الثالث"];
+  snap.forEach(d=>{rank++;const x=d.data();const li=document.createElement("li");li.style.cssText="list-style:none;padding:12px;margin:8px 0;background:#f1f7f1;border-radius:10px";const position=rankNames[rank-1]||("المركز رقم "+rank);li.textContent=position+" — "+(x.displayName||"مستخدم أذكاري")+" — "+Number(x.totalDhikr||0).toLocaleString("ar-EG")+" ذكر";list.appendChild(li);});
+  status.textContent=snap.empty?"لا توجد مشاركات بعد. ابدأ الذكر لتظهر هنا.":"ترتيب أعلى 20 مشاركًا حسب إجمالي الأذكار";
  }catch(e){status.textContent="تعذر تحميل الترتيب. تأكد من تفعيل Firestore وقواعد الأمان.";console.warn(e);}
 };
 $("accountOpen").onclick=()=>{panel.hidden=false;};
