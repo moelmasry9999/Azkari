@@ -1706,8 +1706,21 @@ window.azkariLoadLeaderboard=async()=>{
   list.innerHTML="";
   let rank=0;
   const rankNames=["🥇 المركز الأول","🥈 المركز الثاني","🥉 المركز الثالث"];
-  snap.forEach(d=>{rank++;const x=d.data();const li=document.createElement("li");li.style.cssText="list-style:none;padding:12px;margin:8px 0;background:#f1f7f1;border-radius:10px";const position=rankNames[rank-1]||("المركز رقم "+rank);li.textContent=position+" — "+(x.displayName||"مستخدم أذكاري")+" — "+Number(x.totalDhikr||0).toLocaleString("ar-EG")+" ذكر";list.appendChild(li);});
-  status.textContent=snap.empty?"لا توجد مشاركات بعد. ابدأ الذكر لتظهر هنا.":"ترتيب أعلى 20 مشاركًا حسب إجمالي الأذكار";
+  let currentUserShown=false;
+  snap.forEach(d=>{
+   rank++;
+   const x=d.data();
+   const isMe=d.id===currentUser.uid;
+   if(isMe)currentUserShown=true;
+   const li=document.createElement("li");
+   li.style.cssText=isMe
+    ?"list-style:none;padding:15px;margin:10px 0;background:#dff5e5;border:3px solid #168044;border-radius:12px;font-weight:800;box-shadow:0 2px 10px #16804430"
+    :"list-style:none;padding:12px;margin:8px 0;background:#f1f7f1;border:1px solid #e1ebe3;border-radius:10px";
+   const position=rankNames[rank-1]||("المركز رقم "+rank);
+   li.textContent=(isMe?"⭐ أنت هنا | ":"")+position+" — "+(x.displayName||"مستخدم أذكاري")+" — "+Number(x.totalDhikr||0).toLocaleString("ar-EG")+" ذكر";
+   list.appendChild(li);
+  });
+  status.textContent=snap.empty?"لا توجد مشاركات بعد. ابدأ الذكر لتظهر هنا.":(currentUserShown?"تم تمييز ترتيبك باللون الأخضر.":"أنت خارج قائمة أول 20 مشاركًا حاليًا.");
  }catch(e){status.textContent="تعذر تحميل الترتيب. تأكد من تفعيل Firestore وقواعد الأمان.";console.warn(e);}
 };
 $("accountOpen").onclick=()=>{panel.hidden=false;};
